@@ -19,14 +19,25 @@ export interface Profile {
 }
 
 export interface Exercise {
-  id: string;
+  _id: string; // Changed to match mongo
   name: string;
-  muscle_group: string;
+  bodyPart: string; // Changed to match mongo
   equipment?: string | null;
 }
 
+export interface WorkoutRoutine {
+  _id: string;
+  name: string;
+  exercises: {
+    name: string;
+    muscle_group: string;
+    default_sets: number;
+    default_reps: number;
+  }[];
+}
+
 export interface WorkoutSession {
-  id: string;
+  _id: string; // Changed to match mongo
   user_id: string;
   name: string;
   started_at: string;
@@ -36,7 +47,7 @@ export interface WorkoutSession {
 }
 
 export interface WorkoutExercise {
-  id: string;
+  _id: string; // Changed to match mongo
   workout_session_id: string;
   exercise_name: string;
   muscle_group: string | null;
@@ -45,6 +56,7 @@ export interface WorkoutExercise {
 
 export interface ExerciseSet {
   id: string;
+  _id: string; // Added mongo alias
   workout_exercise_id: string;
   set_number: number;
   weight_kg: number | null;

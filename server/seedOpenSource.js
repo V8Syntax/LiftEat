@@ -7,21 +7,37 @@ dotenv.config();
 
 const RAW_REPO_URL = "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/dist/exercises.json";
 
+const getStandardBodyPart = (ex) => {
+  const category = (ex.category || '').toLowerCase();
+  const muscle = (ex.primaryMuscles[0] || '').toLowerCase();
+
+  // 1. Prioritize Cardio category
+  if (category === 'cardio') return 'cardio';
+
+  // 2. Map specific muscles to broad groups
+  if (['abdominals'].includes(muscle)) return 'abs';
+  if (['quadriceps', 'hamstrings', 'calves', 'glutes', 'adductors', 'abductors'].includes(muscle)) return 'legs';
+  if (['biceps', 'triceps', 'forearms'].includes(muscle)) return 'arms';
+  if (['chest', 'pectorals'].includes(muscle)) return 'chest';
+  if (['lats', 'middle back', 'lower back', 'traps', 'trapezius'].includes(muscle)) return 'back';
+  if (['shoulders', 'deltoids'].includes(muscle)) return 'shoulders';
+
+  return muscle || 'full body';
+};
+
 const seedDB = async () => {
   try {
     await mongoose.connect(process.env.MONGO_URI);
     console.log('✅ MongoDB Connected');
-
-    console.log('⬇️  Downloading 800+ exercises from Open Source DB...');
+    console.log('⬇️  Downloading exercises...');
+    
     const { data } = await axios.get(RAW_REPO_URL);
 
-    // Transform data to match our schema
     const formattedExercises = data.map(ex => ({
       name: ex.name,
       category: ex.category,
-      bodyPart: ex.primaryMuscles[0] || 'full body',
+      bodyPart: getStandardBodyPart(ex), // Applies the normalization
       equipment: ex.equipment || 'body weight',
-      // The dataset provides simplified image paths, we format them to full URLs
       images: ex.images.map(img => `https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/${img}`),
       instructions: ex.instructions
     }));
